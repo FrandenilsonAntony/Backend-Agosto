@@ -1,8 +1,22 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const {MongoClient} = require('mongodb');
 
-//habilitamos o processamento de JSON
-app.use(express.json());
+const url = "mongodb+srv://admin:V90K7ehx2krw7OlM@cluster0.gbnr4oi.mongodb.net";
+const dbName = "Backend-Agosto-2023";
+const client = new MongoClient(url);
+
+async function main() {
+ console.info("Conectando ao banco de dados...");
+ await client.connect();
+ console.info("Banco de dados conectado com sucesso!");
+
+ const db = client.db(dbName);
+ const collection = db.collection("Empresas")
+
+ const app = express();
+
+  //habilitamos o processamento de JSON
+  app.use(express.json());
 
 //ENDPOINT PRINCIPAL
 app.get('/', function (req, res) {
@@ -19,8 +33,9 @@ app.get('/oi', function (req, res) {
 const lista = ["Tribunal Eleitoral","Abitel Telecom","Fiber Network", "Tribunal Eleitoral"];
 
 //READ ALL [GET] /EMPRESAS
-app.get("/empresas", function (req, res){
-  res.send(lista.filter(Boolean));
+app.get("/empresas", async function (req, res){
+  const itens = await collection.find().toArray();
+  res.send(itens);
 });
 
 //CREAT [POST] /EMPRESAS
@@ -74,3 +89,7 @@ app.delete("/empresas/:id", function (req, res) {
 });
 
 app.listen(3000);
+
+}
+
+main();
