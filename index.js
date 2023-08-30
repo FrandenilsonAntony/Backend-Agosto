@@ -1,5 +1,5 @@
 const express = require('express');
-const {MongoClient} = require('mongodb');
+const {MongoClient, ObjectId} = require('mongodb');
 
 const url = "mongodb+srv://admin:V90K7ehx2krw7OlM@cluster0.gbnr4oi.mongodb.net";
 const dbName = "Backend-Agosto-2023";
@@ -20,12 +20,12 @@ async function main() {
 
 //ENDPOINT PRINCIPAL
 app.get('/', function (req, res) {
-  res.send('Hello World');
+  res.send("Hello World");
 });
 
 //ENDPOINT /oi
-app.get('/oi', function (req, res) {
-    res.send('API Backend com Nodejs & Express.');
+app.get("/oi", function (req, res) {
+    res.send("API Backend com Nodejs & Express.");
 });
 
 
@@ -39,53 +39,55 @@ app.get("/empresas", async function (req, res){
 });
 
 //CREAT [POST] /EMPRESAS
-app.post("/empresas", function (req, res){
+app.post("/empresas", async function (req, res){
 //console.log(req.body, typeof req.body);
 
 //Extrair o empresa do Body da request(corpo da requisição)
-  const item = req.body.empresa;
+  const item = req.body;
 
-//ISERIR O ITEM NA LISTA
-lista.push(item);
+//Iseri o item da collection
+await collection.insertOne(item);
 
 //Enviamos uma resposta de sucesso
-  res.send("Item criado com sucesso!");
+  res.status(201).send(item);
 });
 
 //Read by ID [GET] /EMPRESAS/:ID
-app.get("/empresas/:id", function (req, res){
+app.get("/empresas/:id", async function (req, res){
   //pegamos o parâmetro pelo ID
-  const id = req.params.id - 1;
+  const id = req.params.id;
 
-  //pegamos informação da lista
-  const item = lista[id];
-
+  //pegamos informação da collection
+  const item = await collection.findOne ({
+    _id: new ObjectId(id),
+  });
+//Exibimos o item na resposta do endpoint
   res.send(item);
 });
 
 //UPDATE [PUT] /EMPRESAS/:ID
-app.put("/empresas/:id", function (req, res){
+app.put("/empresas/:id", async function (req, res){
   //Pegamos o parâmetro pelo ID
-  const id = req.params.id - 1;
+  const id = req.params.id;
 
-  //Extrai empresa do Body da request(corpo da requisição)
-  const item = req.body.empresa;
+  //Extrai o nome do Body da request(corpo da requisição)
+  const item = req.body;
 
-  //Atualizamos o item da lista registro
-  lista[id] = item;
+  //Atualizamos a informação na collection
+  await collection.updateOne({ _id: new ObjectId(id) }, { $set: item });
 
-  res.send("Item registrado com sucesso!");
+  res.send(item);
 });
 
 // Delete -> [DELETE] /herois/:id
-app.delete("/empresas/:id", function (req, res) {
+app.delete("/empresas/:id", async function (req, res) {
   // Pegamos o parâmetro de rota ID
-  const id = req.params.id - 1;
+  const id = req.params.id;
 
-  // Excluir o item da lista
-  delete lista[id];
+  // Excluir o item da collection
+  await collection.updateOne({ _id: new ObjectId(id) }, { $set: item });
 
-  res.send("Item excluído com sucesso!");
+  res.status(204).send();
 });
 
 app.listen(3000);
